@@ -1,0 +1,33 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp"
+    android:orientation="vertical">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Choose unit of temperature:"
+        android:textAppearance="@style/TextAppearance.Weather.P2"
+        android:paddingStart="10dp"
+        android:labelFor="@id/units"/>
+    <Spinner
+        android:id="@+id/units"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:entries="@array/units"
+        style="@style/SpinnerTextStyle"
+        android:checked="true"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Type city:"
+        android:textAppearance="@style/TextAppearance.Weather.P2"
+        android:paddingStart="10dp"
+        android:labelFor="@id/units"/>
+    <EditText
+        android:id="@+id/cityEdt"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:autofillHints="City" />
+
+</LinearLayout>

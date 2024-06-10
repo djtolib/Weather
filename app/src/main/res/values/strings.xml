@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Weather</string>
+    <string name="location_name">Location</string>
+    <string name="min_max_temp">min: %.1f°%s, max: %.1f°%s</string>
+    <string-array name="units">
+        <item>C</item>
+        <item>F</item>
+    </string-array>
+</resources>
