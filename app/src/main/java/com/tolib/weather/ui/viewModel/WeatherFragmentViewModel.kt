@@ -9,6 +9,7 @@ import com.tolib.weather.data.model.WeatherData
 import com.tolib.weather.data.model.WeatherResponse
 import com.tolib.weather.data.model.WeatherResult
 import com.tolib.weather.data.model.WeatherState
+import com.tolib.weather.data.repository.RetrofitClient
 import com.tolib.weather.data.repository.WeatherRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +17,7 @@ import kotlinx.coroutines.launch
 
 class WeatherFragmentViewModel : ViewModel() {
 
-    private val weatherRepository = WeatherRepository()
+    private val weatherRepository = WeatherRepository(RetrofitClient.apiService)
 
     private val _weatherState = MutableStateFlow<WeatherState>(WeatherState.Loading)
     val weatherState: StateFlow<WeatherState> = _weatherState

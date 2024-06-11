@@ -56,7 +56,10 @@ dependencies {
     implementation(libs.logging.interceptor)
     implementation(libs.androidx.fragment.ktx)
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.mockito.core)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    testImplementation(libs.mockk)
+    debugImplementation(libs.androidx.fragment.testing)
+    debugImplementation(libs.androidx.junit)
+    debugImplementation(libs.androidx.espresso.core)
 }

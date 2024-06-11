@@ -1,12 +1,12 @@
 package com.tolib.weather.data.repository
 
-import ApiException
+import com.tolib.weather.ApiException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class WeatherRepository {
+class WeatherRepository(val apiService: ApiService) {
 
-    private val apiService = RetrofitClient.apiService
+//    private val apiService = RetrofitClient.apiService
 
     suspend fun getCurrentWeather(
         city: String? = null,
