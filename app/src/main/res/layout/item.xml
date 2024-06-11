@@ -46,7 +46,6 @@
         android:layout_height="50dp"
         android:layout_weight="1"
         android:scaleType="fitEnd"
-        android:layout_gravity="center_vertical"
-        android:src="@mipmap/ic_launcher"/>
+        android:layout_gravity="center_vertical" />
 
 </LinearLayout>

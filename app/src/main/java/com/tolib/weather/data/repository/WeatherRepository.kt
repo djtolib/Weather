@@ -1,41 +1,62 @@
 package com.tolib.weather.data.repository
 
-import com.tolib.weather.data.model.Weather
-import com.tolib.weather.data.model.WeatherResult
+import ApiException
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
-import retrofit2.HttpException
+import kotlinx.coroutines.withContext
 
 class WeatherRepository {
 
     private val apiService = RetrofitClient.apiService
 
-    fun getWeather(city: String? = null, unit: String, lat: Double? = null, lon: Double? = null ): Flow<WeatherResult> = flow {
+    suspend fun getCurrentWeather(
+        city: String? = null,
+        lat: Double? = null,
+        lon: Double? = null,
+        unit: String
+    ) = withContext(Dispatchers.IO) {
         try {
-            val response = apiService.getWeather(city = city, units = unitToBackEndUnit(unit), lat = lat.toString(), lon = lon.toString())
-            val responseForecast = apiService.getForecast(city = city, units = unitToBackEndUnit(unit), lat = lat.toString(), lon = lon.toString())
-            if (response.isSuccessful && responseForecast.isSuccessful) {
-                val weather = response.body()
-                val forecast = responseForecast.body()
-                if(weather != null && forecast != null)
-                    emit(WeatherResult.Success(weather, forecast))
-                else
-                    emit(WeatherResult.Error("Null body received"))
+            val response = apiService.getCurrentWeather(
+                city,
+                lat.toString(),
+                lon.toString(),
+                unitToBackEndUnit(unit)
+            )
+            if (response.isSuccessful) {
+                return@withContext response.body() ?: throw ApiException(0, "Null body received")
             } else {
-                emit(WeatherResult.Error("Failed to fetch weather"))
+                throw ApiException(response.code(), response.message())
             }
-        } catch (e: HttpException) {
-            emit(WeatherResult.Error(e.message ?: "An error occurred"))
-        } catch (e: Exception) {
-            emit(WeatherResult.Error("An error occurred2 ${e.message}"))
+        } catch (exp: Exception) {
+            throw ApiException(0, exp.message ?: "An error on call")
         }
-    }.flowOn(Dispatchers.IO)
+    }
 
-    private fun unitToBackEndUnit(unit: String) = when(unit){
-         "C" -> "metric"
-         "F" -> "imperial"
+    suspend fun getForecast(
+        city: String? = null,
+        lat: Double? = null,
+        lon: Double? = null,
+        unit: String
+    ) = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.getForecast(
+                city,
+                lat.toString(),
+                lon.toString(),
+                unitToBackEndUnit(unit)
+            )
+            if (response.isSuccessful) {
+                return@withContext response.body() ?: throw Exception()
+            } else {
+                throw ApiException(response.code(), response.message())
+            }
+        } catch (exp: Exception) {
+            throw ApiException(0, exp.message ?: "An error on call")
+        }
+    }
+
+    private fun unitToBackEndUnit(unit: String) = when (unit) {
+        "C" -> "metric"
+        "F" -> "imperial"
         else -> "metric"
     }
 }

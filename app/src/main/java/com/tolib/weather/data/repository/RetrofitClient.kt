@@ -1,6 +1,7 @@
 package com.tolib.weather.data.repository
 
 import com.google.gson.Gson
+import com.tolib.weather.BASE_URL
 import com.tolib.weather.BuildConfig
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -9,7 +10,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
-    private const val BASE_URL = "https://api.openweathermap.org/data/2.5/"
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = if (BuildConfig.DEBUG) {
             HttpLoggingInterceptor.Level.BODY
@@ -17,6 +17,7 @@ object RetrofitClient {
     }
     private val apiClient = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
+        .addInterceptor(ApiKeyInterceptor())
         .build()
     val apiService: ApiService by lazy {
         Retrofit.Builder()

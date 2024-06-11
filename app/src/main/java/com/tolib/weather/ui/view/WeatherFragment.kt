@@ -1,16 +1,13 @@
 package com.tolib.weather.ui.view
 
 
-import SharedPreferencesUtil
-import SharedPreferencesUtil.CITY_KEY
-import SharedPreferencesUtil.UNIT_KEY
+import com.tolib.weather.ui.WeatherAppPreferences
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.Manifest
 import android.annotation.SuppressLint
-import android.service.controls.actions.ModeAction
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View.OnTouchListener
 import android.view.ViewGroup
@@ -25,9 +22,12 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.squareup.picasso.Picasso
+import com.tolib.weather.PicassoCache
 import com.tolib.weather.R
 import com.tolib.weather.data.model.ForecastResponse
 import com.tolib.weather.data.model.ItemModel
+import com.tolib.weather.data.model.Weather
+import com.tolib.weather.data.model.WeatherResponse
 import com.tolib.weather.data.model.WeatherState
 import com.tolib.weather.ui.viewModel.WeatherFragmentViewModel
 import com.tolib.weather.databinding.FragmentWeatherBinding
@@ -36,7 +36,6 @@ import com.tolib.weather.ui.WeatherItemsAdapter
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
-import kotlin.math.abs
 
 class WeatherFragment : Fragment(), OnTouchListener {
 
@@ -51,6 +50,8 @@ class WeatherFragment : Fragment(), OnTouchListener {
     private lateinit var unit: String
     private val viewModel: WeatherFragmentViewModel by activityViewModels()
     private lateinit var binding: FragmentWeatherBinding
+    private val prefs: WeatherAppPreferences by lazy { WeatherAppPreferences(requireContext()) }
+    private val picasso: PicassoCache by lazy { PicassoCache(requireContext()) }
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (isGranted) {
@@ -62,11 +63,16 @@ class WeatherFragment : Fragment(), OnTouchListener {
                 showMessage("Permission is required")
             }
         }
-    override fun onResume() {
-        super.onResume()
-        val city = SharedPreferencesUtil.readString(requireContext(), CITY_KEY, "Dushanbe")
-        unit = SharedPreferencesUtil.readString(requireContext(), UNIT_KEY, "C")
-        viewModel.getWeather(city, unit)
+    override fun onStart() {
+        super.onStart()
+        unit = prefs.readUnit()
+        val weather = prefs.readWeather()
+        if(weather == null){
+            viewModel.getWeather(prefs.readCity(), null, null, prefs.readUnit())
+        } else {
+            viewModel.setDataFromCache(weather, prefs.readForecast()!!, prefs.readUnit())
+        }
+
     }
 
     override fun onCreateView(
@@ -122,23 +128,15 @@ class WeatherFragment : Fragment(), OnTouchListener {
 
                         is WeatherState.Success -> with(binding){
                             progressBar.isVisible = false
-                            todayCardInfo.text = state.weather.weather.first().description
-                            todayTemp.text = String.format(
-                                "%.1f%s%s",
-                                state.weather.mainInfo.temp,
-                                DEGREE_SIGN,
-                                state.unit
-                            )
-                            minMaxEdt.text = String.format(
-                                getString(R.string.min_max_temp),
-                                state.weather.mainInfo.tempMin,
-                                unit,
-                                state.weather.mainInfo.tempMax,
-                                unit)
-                            location.text = state.weather.name
-                            Picasso.get()
-                                .load(String.format(ICON_URL, state.weather.weather.first().icon))
-                                .into(todayImage)
+                            Log.v("TOLIB", "From remote")
+                            writeToCache(state)
+                            fillTodayCard(state.weather)
+                            fillRecyclerView(state.forecast, state.unit)
+                        }
+
+                        is WeatherState.Cached ->{
+                            Log.v("TOLIB", "FROM CACh")
+                            binding.fillTodayCard(state.weather)
                             fillRecyclerView(state.forecast, state.unit)
                         }
                     }
@@ -146,6 +144,32 @@ class WeatherFragment : Fragment(), OnTouchListener {
 
             }
         }
+    }
+
+    private fun writeToCache(state: WeatherState.Success) {
+        prefs.writeWeather(state.weather)
+        prefs.writeForecast(state.forecast)
+    }
+
+    private fun FragmentWeatherBinding.fillTodayCard(weather: WeatherResponse) {
+        todayCardInfo.text = weather.weather.first().description
+        todayTemp.text = String.format(
+            "%.1f%s%s",
+            weather.mainInfo.temp,
+            DEGREE_SIGN,
+            unit
+        )
+        minMaxEdt.text = String.format(
+            getString(R.string.min_max_temp),
+            weather.mainInfo.tempMin,
+            unit,
+            weather.mainInfo.tempMax,
+            unit
+        )
+        location.text = weather.name
+        picasso.get()
+            .load(String.format(ICON_URL, weather.weather.first().icon))
+            .into(todayImage)
     }
 
     private fun fillRecyclerView(forecast: ForecastResponse, unit: String) {
@@ -162,7 +186,7 @@ class WeatherFragment : Fragment(), OnTouchListener {
             )
         }
 
-        val adapter = WeatherItemsAdapter(data)
+        val adapter = WeatherItemsAdapter(data, picasso)
         binding.recyclerview.adapter = adapter
     }
 
@@ -179,7 +203,7 @@ class WeatherFragment : Fragment(), OnTouchListener {
             MotionEvent.ACTION_UP -> {
                 y2 = event.y
                 if (y2 - y1 > MIN_DIST) {
-                    viewModel.getWeather("Sydney", "C")
+                    viewModel.getWeather(prefs.readCity(), null, null, prefs.readUnit())
                 }
             }
         }
