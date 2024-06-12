@@ -9,6 +9,9 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
+/***
+ * This is simple singleton class encapsulating build of retrofit and okhttp clients
+ */
 object RetrofitClient {
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = if (BuildConfig.DEBUG) {

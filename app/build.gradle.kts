@@ -10,6 +10,9 @@ android {
         viewBinding = true
         buildConfig = true
     }
+    testOptions{
+        unitTests.isReturnDefaultValues = true
+    }
     defaultConfig {
         applicationId = "com.tolib.weather"
         minSdk = 26

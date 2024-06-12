@@ -1,13 +1,11 @@
 package com.tolib.weather.ui.viewModel
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tolib.weather.API_SUCCESS_CODE
 import com.tolib.weather.data.model.ForecastResponse
 import com.tolib.weather.data.model.WeatherData
 import com.tolib.weather.data.model.WeatherResponse
-import com.tolib.weather.data.model.WeatherResult
 import com.tolib.weather.data.model.WeatherState
 import com.tolib.weather.data.repository.RetrofitClient
 import com.tolib.weather.data.repository.WeatherRepository
@@ -21,6 +19,17 @@ class WeatherFragmentViewModel : ViewModel() {
 
     private val _weatherState = MutableStateFlow<WeatherState>(WeatherState.Loading)
     val weatherState: StateFlow<WeatherState> = _weatherState
+
+    /***
+     * This method launches suspend function in order to get data from remote and
+     * also combines results of [WeatherRepository.getCurrentWeather] and [WeatherRepository.getForecast].
+     * In case of success should change [_weatherState] value to [WeatherState.Success], otherwise [WeatherState.Error]
+     * @param city City which weather should be get
+     * @param lat Latitude of gps coordinate
+     * @param lon Longitude of gps coordinate
+     * @param unit Unit of temperature. E.g. C, F
+     * @return [Unit]
+     */
     fun getWeather(city: String? = null, lat: Double? = null, lon: Double? = null, unit: String) {
         viewModelScope.launch {
             _weatherState.value = WeatherState.Loading
@@ -35,6 +44,14 @@ class WeatherFragmentViewModel : ViewModel() {
         }
     }
 
+    /***
+     * This method  sets [_weatherState] value to [WeatherState.Cached] in order to prevent double writing to cache
+     * and pass to UI layer date from cache.
+     * @param [WeatherResponse] City which weather should be get
+     * @param [ForecastResponse]
+     * @param unit Unit of temperature. E.g. C, F
+     * @return [Unit]
+     */
     fun setDataFromCache(weather: WeatherResponse, forecast: ForecastResponse, unit: String) {
         _weatherState.value = WeatherState.Cached(weather, forecast, unit)
     }

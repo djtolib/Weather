@@ -1,19 +1,29 @@
 package com.tolib.weather.data.repository
 
 import com.tolib.weather.ApiException
+import com.tolib.weather.data.model.ForecastResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-
-class WeatherRepository(val apiService: ApiService) {
-
-//    private val apiService = RetrofitClient.apiService
-
+import com.tolib.weather.data.model.WeatherResponse
+/***
+ * This class is helper for interacting with remote API
+ ***/
+class WeatherRepository(private val apiService: ApiService) {
+    /***
+     * This method gets current weather by location name or gps coordinates
+     * @param city City which weather should be get
+     * @param lat Latitude of gps coordinate
+     * @param lon Longitude of gps coordinate
+     * @param unit Unit of temperature. E.g. C, F
+     * @return See [WeatherResponse]
+     * @throws ApiException when occurs some error
+    ***/
     suspend fun getCurrentWeather(
         city: String? = null,
         lat: Double? = null,
         lon: Double? = null,
         unit: String
-    ) = withContext(Dispatchers.IO) {
+    ) : WeatherResponse = withContext(Dispatchers.IO) {
         try {
             val response = apiService.getCurrentWeather(
                 city,
@@ -31,12 +41,21 @@ class WeatherRepository(val apiService: ApiService) {
         }
     }
 
+    /***
+     * This method gets weather forecast by location name or gps coordinates
+     * @param city City which weather should be get
+     * @param lat Latitude of gps coordinate
+     * @param lon Longitude of gps coordinate
+     * @param unit Unit of temperature. E.g. C, F
+     * @return See [ForecastResponse]
+     * @throws ApiException when occurs some error
+     ***/
     suspend fun getForecast(
         city: String? = null,
         lat: Double? = null,
         lon: Double? = null,
         unit: String
-    ) = withContext(Dispatchers.IO) {
+    ): ForecastResponse = withContext(Dispatchers.IO) {
         try {
             val response = apiService.getForecast(
                 city,

@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.Manifest
 import android.annotation.SuppressLint
+import android.location.Location
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View.OnTouchListener
@@ -55,7 +56,7 @@ class WeatherFragment : Fragment(), OnTouchListener {
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (isGranted) {
-                val location = LocationUtils.getCurrentLocation(requireContext())
+                val location: Location? = null //LocationUtils.getCurrentLocation(requireContext())
                 if (location != null) {
                     viewModel.getWeather(lat = location.latitude, lon = location.longitude, unit = unit )
                 } else showMessage("Couldn't get location")

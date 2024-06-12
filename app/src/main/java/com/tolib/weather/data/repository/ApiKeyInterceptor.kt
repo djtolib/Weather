@@ -6,6 +6,9 @@ import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
 
+/***
+ * This class is implementation of [Interceptor] for inserting api key to every http call
+ */
 class ApiKeyInterceptor : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest: Request = chain.request()
